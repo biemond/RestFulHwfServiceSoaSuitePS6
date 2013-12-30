@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns="http://nl.amis/repair"
+            targetNamespace="http://nl.amis/repair"
+            elementFormDefault="qualified">
+  <xsd:simpleType name="products">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="xboxone"/>
+      <xsd:enumeration value="playstation4"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="repair">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="product"       maxOccurs="1" nillable="false" type="products"/>
+        <xsd:element name="serialnumber"  maxOccurs="1" nillable="false" type="xsd:string"/>
+        <xsd:element name="countryCode"   maxOccurs="1" nillable="false" type="xsd:string"/>
+        <xsd:element name="city"          maxOccurs="1" nillable="false" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

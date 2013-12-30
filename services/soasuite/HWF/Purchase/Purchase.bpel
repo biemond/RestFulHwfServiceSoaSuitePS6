@@ -1,0 +1,206 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Sun Dec 29 19:55:50 CET 2013
+  Author:  edwin
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="Purchase"
+               targetNamespace="http://xmlns.oracle.com/HWF/Purchase/Purchase"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/HWF/Purchase/Purchase"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:ns1="http://xmlns.oracle.com/bpel/workflow/taskService"
+         xmlns:ns2="http://nl.amis/purchase"
+         xmlns:task="http://xmlns.oracle.com/bpel/workflow/task"
+         xmlns:wfcommon="http://xmlns.oracle.com/bpel/workflow/common"
+         xmlns:ns4="http://xmlns.oracle.com/bpel/workflow/routingSlip"
+         xmlns:ns3="http://xmlns.oracle.com/bpel/workflow/TaskEvidenceService"
+         xmlns:wf="http://schemas.oracle.com/bpel/extensions/workflow">
+
+  <import namespace="http://xmlns.oracle.com/HWF/Purchase/Purchase" location="Purchase.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="purchase_client" partnerLinkType="client:Purchase" myRole="PurchaseProvider"/>
+    <partnerLink name="ApprovePurchase.TaskService"
+                 partnerLinkType="ns1:TaskService" partnerRole="TaskService"
+                 myRole="TaskServiceCallbackListener"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:PurchaseRequestMessage"/>
+    <variable name="ApprovePurchase1_globalVariable"
+              messageType="ns1:taskMessage"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in Purchase.wsdl) -->
+    <receive name="receiveInput" partnerLink="purchase_client" portType="client:Purchase" operation="process" variable="inputVariable" createInstance="yes"/>
+    <scope name="Scope1">
+      <sequence>
+        <scope name="ApprovePurchase2"
+               xmlns:wf="http://schemas.oracle.com/bpel/extensions/workflow"
+               wf:key="ApprovePurchase1_globalVariable">
+          <bpelx:annotation>
+            <bpelx:pattern patternName="bpelx:workflow"/>
+          </bpelx:annotation>
+          <variables>
+            <variable name="initiateTaskInput"
+                      messageType="ns1:initiateTaskMessage"/>
+            <variable name="initiateTaskResponseMessage"
+                      messageType="ns1:initiateTaskResponseMessage"/>
+          </variables>
+          <sequence>
+            <assign name="ApprovePurchase2_AssignTaskAttributes">
+              <copy>
+                <from>number(3)</from>
+                <to variable="initiateTaskInput" part="payload">
+                  <query>task:task/task:priority</query>
+                </to>
+              </copy>
+              <copy>
+                <from>number(3)</from>
+                <to variable="initiateTaskInput" part="payload">
+                  <query>task:task/task:priority</query>
+                </to>
+              </copy>
+              <copy>
+                <from><literal><payload xmlns="http://xmlns.oracle.com/bpel/workflow/task">
+ <purchase xmlns="http://xmlns.oracle.com/bpel/workflow/task"/>
+</payload></literal></from>
+                <to variable="initiateTaskInput" part="payload">
+                  <query>task:task/task:payload</query>
+                </to>
+              </copy>
+              <copy>
+                <from variable="inputVariable" part="payload"/>
+                <to variable="initiateTaskInput" part="payload">
+                  <query>task:task/task:payload/task:purchase</query>
+                </to>
+              </copy>
+            </assign>
+        <assign name="AssignCustom">
+              <copy>
+                <from>'purchase'</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute1</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:product</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute2</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:amount</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:numberAttribute1</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:shipper</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute3</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:shippingDate</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:dateAttribute1</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:countryCode</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute4</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns2:city</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute5</to>
+              </copy>
+            </assign>
+
+            <invoke name="initiateTask_ApprovePurchase2"
+                    partnerLink="ApprovePurchase.TaskService"
+                    operation="initiateTask" portType="ns1:TaskService"
+                    inputVariable="initiateTaskInput"
+                    outputVariable="initiateTaskResponseMessage"/>
+            <receive name="receiveCompletedTask_ApprovePurchase2"
+                     partnerLink="ApprovePurchase.TaskService"
+                     portType="ns1:TaskServiceCallback"
+                     operation="onTaskCompleted"
+                     variable="ApprovePurchase1_globalVariable"
+                     createInstance="no"/>
+          </sequence>
+        </scope>
+        <if name="taskIf">
+          <documentation>
+            <![CDATA[Task outcome is APPROVE]]>
+          </documentation>
+          <bpelx:annotation>
+            <bpelx:pattern patternName="Task outcome is APPROVE"/>
+          </bpelx:annotation>
+          <condition>$ApprovePurchase1_globalVariable.payload/task:systemAttributes/task:outcome = 'APPROVE'</condition>
+          <sequence>
+            <assign name="CopyPayloadFromTask">
+              <copy>
+                <from variable="ApprovePurchase1_globalVariable" part="payload"><query>task:payload/task:purchase</query></from>
+                <to variable="inputVariable" part="payload"/>
+              </copy>
+            </assign>
+          </sequence>
+          <elseif>
+            <documentation>
+              <![CDATA[Task outcome is REJECT]]>
+            </documentation>
+            <bpelx:annotation>
+              <bpelx:pattern patternName="Task outcome is REJECT"/>
+            </bpelx:annotation>
+            <condition>$ApprovePurchase1_globalVariable.payload/task:systemAttributes/task:outcome = 'REJECT'</condition>
+            <sequence>
+              <assign name="CopyPayloadFromTask">
+                <copy>
+                  <from variable="ApprovePurchase1_globalVariable"
+                        part="payload"><query>task:payload/task:purchase</query></from>
+                  <to variable="inputVariable" part="payload"/>
+                </copy>
+              </assign>
+            </sequence>
+          </elseif>
+          <else>
+            <sequence>
+              <assign name="CopyPayloadFromTask">
+                <copy>
+                  <from variable="ApprovePurchase1_globalVariable"
+                        part="payload"><query>task:payload/task:purchase</query></from>
+                  <to variable="inputVariable" part="payload"/>
+                </copy>
+              </assign>
+            </sequence>
+          </else>
+        </if>
+      </sequence>
+    </scope>
+  </sequence>
+</process>

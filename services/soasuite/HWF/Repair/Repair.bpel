@@ -1,0 +1,224 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Mon Dec 30 19:49:53 CET 2013
+  Author:  edwin
+  Type: BPEL 2.0 Process
+  Purpose: One Way BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="Repair"
+               targetNamespace="http://xmlns.oracle.com/HWF/Repair/Repair"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/HWF/Repair/Repair"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:ns1="http://nl.amis/repair"
+         xmlns:task="http://xmlns.oracle.com/bpel/workflow/task"
+         xmlns:taskservice="http://xmlns.oracle.com/bpel/workflow/taskService"
+         xmlns:wfcommon="http://xmlns.oracle.com/bpel/workflow/common"
+         xmlns:wf="http://schemas.oracle.com/bpel/extensions/workflow"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap">
+
+  <import namespace="http://xmlns.oracle.com/HWF/Repair/Repair" location="Repair.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      PARTNERLINKS                                                      
+      List of services participating in this BPEL process               
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="repair_client" partnerLinkType="client:Repair" myRole="RepairProvider"/>
+    <partnerLink name="ApproveRepair.TaskService_1"
+                 partnerLinkType="taskservice:TaskService"
+                 partnerRole="TaskService"
+                 myRole="TaskServiceCallbackListener"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:RepairRequestMessage"/>
+    <variable name="ApproveRepair1_globalVariable"
+              messageType="taskservice:taskMessage"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in Repair.wsdl) -->
+    <receive name="receiveInput" partnerLink="repair_client" portType="client:Repair" operation="process" variable="inputVariable" createInstance="yes"/>
+    <scope name="ApproveRepair3"
+           xmlns:wf="http://schemas.oracle.com/bpel/extensions/workflow"
+           wf:key="ApproveRepair1_globalVariable">
+      <bpelx:annotation>
+        <bpelx:pattern patternName="bpelx:workflow"/>
+      </bpelx:annotation>
+      <variables>
+        <variable name="initiateTaskInput"
+                  messageType="taskservice:initiateTaskMessage"/>
+        <variable name="initiateTaskResponseMessage"
+                  messageType="taskservice:initiateTaskResponseMessage"/>
+      </variables>
+      <sequence>
+        <assign name="ApproveRepair3_AssignTaskAttributes">
+          <copy>
+            <from>string('Accept defect consoles')</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:title</query>
+            </to>
+          </copy>
+          <copy>
+            <from>number(3)</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:priority</query>
+            </to>
+          </copy>
+          <copy>
+            <from>string('Accept defect consoles')</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:title</query>
+            </to>
+          </copy>
+          <copy>
+            <from>number(3)</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:priority</query>
+            </to>
+          </copy>
+          <copy>
+            <from>string('Accept defect consoles')</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:title</query>
+            </to>
+          </copy>
+          <copy>
+            <from>number(3)</from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:priority</query>
+            </to>
+          </copy>
+          <copy>
+            <from><literal><payload xmlns="http://xmlns.oracle.com/bpel/workflow/task">
+ <device xmlns="http://xmlns.oracle.com/bpel/workflow/task"/>
+</payload></literal></from>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:payload</query>
+            </to>
+          </copy>
+          <copy>
+            <from variable="inputVariable" part="payload"/>
+            <to variable="initiateTaskInput" part="payload">
+              <query>task:task/task:payload/task:device</query>
+            </to>
+          </copy>
+        </assign>
+        <assign name="AssignCustom">
+              <copy>
+                <from>'repair'</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute1</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:product</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute2</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:serialnumber</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute3</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:countryCode</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute4</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:city</from>
+                <to>$initiateTaskInput.payload/task:task/task:systemMessageAttributes/task:textAttribute5</to>
+              </copy>
+        </assign>
+
+        <invoke name="initiateTask_ApproveRepair3"
+                partnerLink="ApproveRepair.TaskService_1"
+                operation="initiateTask" portType="taskservice:TaskService"
+                inputVariable="initiateTaskInput"
+                outputVariable="initiateTaskResponseMessage"/>
+        <receive name="receiveCompletedTask_ApproveRepair3"
+                 partnerLink="ApproveRepair.TaskService_1"
+                 portType="taskservice:TaskServiceCallback"
+                 operation="onTaskCompleted"
+                 variable="ApproveRepair1_globalVariable" createInstance="no"/>
+      </sequence>
+    </scope>
+    <if name="taskIf">
+      <documentation>
+        <![CDATA[Task outcome is APPROVE]]>
+      </documentation>
+      <bpelx:annotation>
+        <bpelx:pattern patternName="Task outcome is APPROVE"/>
+      </bpelx:annotation>
+      <condition>$ApproveRepair1_globalVariable.payload/task:systemAttributes/task:outcome = 'APPROVE'</condition>
+      <sequence>
+        <assign name="CopyPayloadFromTask">
+          <copy>
+            <from variable="ApproveRepair1_globalVariable" part="payload"><query>task:payload/task:device</query></from>
+            <to variable="inputVariable" part="payload"/>
+          </copy>
+        </assign>
+      </sequence>
+      <elseif>
+        <documentation>
+          <![CDATA[Task outcome is REJECT]]>
+        </documentation>
+        <bpelx:annotation>
+          <bpelx:pattern patternName="Task outcome is REJECT"/>
+        </bpelx:annotation>
+        <condition>$ApproveRepair1_globalVariable.payload/task:systemAttributes/task:outcome = 'REJECT'</condition>
+        <sequence>
+          <assign name="CopyPayloadFromTask">
+            <copy>
+              <from variable="ApproveRepair1_globalVariable" part="payload"><query>task:payload/task:device</query></from>
+              <to variable="inputVariable" part="payload"/>
+            </copy>
+          </assign>
+        </sequence>
+      </elseif>
+      <else>
+        <sequence>
+          <assign name="CopyPayloadFromTask">
+            <copy>
+              <from variable="ApproveRepair1_globalVariable" part="payload"><query>task:payload/task:device</query></from>
+              <to variable="inputVariable" part="payload"/>
+            </copy>
+          </assign>
+        </sequence>
+      </else>
+    </if>
+  </sequence>
+</process>

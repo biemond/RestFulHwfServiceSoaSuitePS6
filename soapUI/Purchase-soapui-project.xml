@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project activeEnvironment="Default" name="Purchase" soapui-version="4.5.2" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="PurchaseBinding" type="wsdl" bindingName="{http://xmlns.oracle.com/HWF/Purchase/Purchase}PurchaseBinding" soapVersion="1_1" anonymous="optional" definition="http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep?WSDL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep?WSDL"><con:part><con:url>http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep?WSDL</con:url><con:content><![CDATA[<wsdl:definitions name="Purchase" targetNamespace="http://xmlns.oracle.com/HWF/Purchase/Purchase" xmlns:ns1="http://nl.amis/purchase" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:client="http://xmlns.oracle.com/HWF/Purchase/Purchase" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:documentation>
+    <abstractWSDL>http://10.10.10.10:8001/soa-infra/services/default/Purchase!1.0/Purchase.wsdl</abstractWSDL>
+  </wsdl:documentation>
+  <plnk:partnerLinkType name="Purchase">
+    <plnk:role name="PurchaseProvider" portType="client:Purchase"/>
+  </plnk:partnerLinkType>
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema">
+      <import namespace="http://nl.amis/purchase" schemaLocation="http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep?XSD=xsd/purchase.xsd"/>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="PurchaseRequestMessage">
+    <wsdl:part name="payload" element="ns1:purchase"/>
+  </wsdl:message>
+  <wsdl:portType name="Purchase">
+    <wsdl:operation name="process">
+      <wsdl:input message="client:PurchaseRequestMessage"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PurchaseBinding" type="client:Purchase">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="process">
+      <soap:operation style="document" soapAction="process"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="purchase_client_ep">
+    <wsdl:port name="Purchase_pt" binding="client:PurchaseBinding">
+      <soap:address location="http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep?XSD=xsd/purchase.xsd</con:url><con:content><![CDATA[<xsd:schema targetNamespace="http://nl.amis/purchase" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://nl.amis/purchase">
+  <xsd:simpleType name="products">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="xboxone"/>
+      <xsd:enumeration value="playstation4"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="shipper">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="fedex"/>
+      <xsd:enumeration value="ups"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="purchase">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="product" maxOccurs="1" nillable="false" type="products"/>
+        <xsd:element name="amount" maxOccurs="1" nillable="false" type="xsd:int"/>
+        <xsd:element name="shipper" maxOccurs="1" nillable="false" type="shipper"/>
+        <xsd:element name="shippingDate" maxOccurs="1" nillable="false" type="xsd:date"/>
+        <xsd:element name="countryCode" maxOccurs="1" nillable="false" type="xsd:string"/>
+        <xsd:element name="city" maxOccurs="1" nillable="false" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep</con:endpoint></con:endpoints><con:operation isOneWay="false" action="process" name="process" bindingOperationName="process" type="One-Way" inputName="" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pur="http://nl.amis/purchase">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pur:purchase>
+         <pur:product>xbox</pur:product>
+         <pur:amount>15</pur:amount>
+         <pur:shipper>UPS</pur:shipper>
+         <pur:shippingDate>2014-01-01T00:00:00</pur:shippingDate>
+         <pur:countryCode>DE</pur:countryCode>
+         <pur:city>Berlin</pur:city>
+      </pur:purchase>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="process"/><con:wsrmConfig version="1.2"/></con:call><con:call name="Request 2"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://10.10.10.10:8001/soa-infra/services/default/Purchase/purchase_client_ep</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pur="http://nl.amis/purchase">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <pur:purchase>
+         <pur:product>playstation</pur:product>
+         <pur:amount>3</pur:amount>
+         <pur:shipper>ups</pur:shipper>
+         <pur:shippingDate>2014-01-05T00:00:00</pur:shippingDate>
+         <pur:countryCode>NL</pur:countryCode>
+         <pur:city>putten</pur:city>
+      </pur:purchase>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="process"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/></con:soapui-project>

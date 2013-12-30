@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="US-ASCII" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns="http://nl.amis/purchase"
+            targetNamespace="http://nl.amis/purchase"
+            elementFormDefault="qualified">
+  <xsd:simpleType name="products">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="xboxone"/>
+      <xsd:enumeration value="playstation4"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="shipper">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="fedex"/>
+      <xsd:enumeration value="ups"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="purchase">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="product"       maxOccurs="1" nillable="false" type="products"/>
+        <xsd:element name="amount"        maxOccurs="1" nillable="false" type="xsd:int"/>
+        <xsd:element name="shipper"       maxOccurs="1" nillable="false" type="shipper"/>
+        <xsd:element name="shippingDate"  maxOccurs="1" nillable="false" type="xsd:date"/>
+        <xsd:element name="countryCode"   maxOccurs="1" nillable="false" type="xsd:string"/>
+        <xsd:element name="city"          maxOccurs="1" nillable="false" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>
