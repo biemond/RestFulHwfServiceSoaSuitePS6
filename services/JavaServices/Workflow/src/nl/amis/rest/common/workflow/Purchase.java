@@ -1,6 +1,10 @@
 package nl.amis.rest.common.workflow;
 
+
 import com.sun.jersey.api.core.InjectParam;
+
+import java.net.URI;
+
 import java.util.List;
 
 import javax.ws.rs.DefaultValue;
@@ -15,6 +19,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+
+import javax.ws.rs.core.UriBuilder;
 
 import nl.amis.rest.common.requests.PurchaseRequest;
 import nl.amis.soa.workflow.tasks.entities.PurchaseTask;
@@ -112,8 +118,32 @@ public class Purchase {
         }
     }
 
-    @POST
+
+    @GET
     @Path("/{taskId}")
+    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})    
+    public Response purchaseTask(@PathParam("taskId")  String taskId,
+                                   @PathParam("user")    String user,
+                                   @DefaultValue("true") @QueryParam("isAllowedToBeAcquiredByUser") boolean isAllowedToBeAcquiredByUser,
+                                   @Context SecurityContext sc) {
+        logger.finest("[GET] for taskId " +taskId);
+        if (sc.isUserInRole("AppUser") || sc.isUserInRole("AppAdmin") ) {
+            this.username = user;
+            try {
+              PurchaseTask purchaseTask = wfClient.getPurchaseTask(taskId, user);
+              return Response.ok(purchaseTask).build();
+            }  catch (Throwable t) {
+                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+    
+            }
+        } else {
+            return Response.status(Response.Status.FORBIDDEN).build();   
+        }
+    }
+
+
+    @POST
+    @Path("/{taskId}/acquire")
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})    
     public Response purchaseAcquireTask(@PathParam("taskId")  String taskId,
                                    @PathParam("user")    String user,
@@ -123,15 +153,18 @@ public class Purchase {
         if (sc.isUserInRole("AppUser") || sc.isUserInRole("AppAdmin") ) {
             this.username = user;
             try {
-              PurchaseTask task = wfClient.acquirePurchaseTask( taskId, user, isAllowedToBeAcquiredByUser);
-              return Response.ok(task).build();
+              wfClient.acquireTask( taskId, user, isAllowedToBeAcquiredByUser);
+              return Response.seeOther(getTaskURI(user, taskId)).build();  
             }  catch (Throwable t) {
                 return Response.status(Response.Status.NOT_ACCEPTABLE).build();
-    
             }
         } else {
             return Response.status(Response.Status.FORBIDDEN).build();   
         }
+    }
+
+    private URI getTaskURI(String user, String taskId) {
+           return UriBuilder.fromResource(Purchase.class).path("/{taskId}").build(user, taskId);
     }
 
     @POST
@@ -153,6 +186,8 @@ public class Purchase {
             return Response.status(Response.Status.FORBIDDEN).build();   
         }
     }
+
+
 
     @POST
     @Path("/{taskId}/complete")

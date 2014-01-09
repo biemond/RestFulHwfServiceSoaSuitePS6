@@ -2,6 +2,9 @@ package nl.amis.rest.common.workflow;
 
 
 import com.sun.jersey.api.core.InjectParam;
+
+import java.net.URI;
+
 import java.util.List;
 
 import javax.ws.rs.DefaultValue;
@@ -16,6 +19,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+
+import javax.ws.rs.core.UriBuilder;
 
 import nl.amis.rest.common.requests.RepairRequest;
 import nl.amis.soa.workflow.tasks.entities.PurchaseTask;
@@ -115,8 +120,30 @@ public class Repair {
         }
     }
 
-    @POST
+    @GET
     @Path("/{taskId}")
+    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})    
+    public Response repairTask(@PathParam("taskId")  String taskId,
+                                   @PathParam("user")    String user,
+                                   @DefaultValue("true") @QueryParam("isAllowedToBeAcquiredByUser") boolean isAllowedToBeAcquiredByUser,
+                                   @Context SecurityContext sc) {
+        logger.finest("[GET] for taskId " +taskId);
+        if (sc.isUserInRole("AppUser") || sc.isUserInRole("AppAdmin") ) {
+            this.username = user;
+            try {
+              RepairTask repairTask = wfClient.getRepairTask(taskId, user);
+              return Response.ok(repairTask).build();
+            }  catch (Throwable t) {
+                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+    
+            }
+        } else {
+            return Response.status(Response.Status.FORBIDDEN).build();   
+        }
+    }
+
+    @POST
+    @Path("/{taskId}/acquire")
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})    
     public Response repairAcquireTask(@PathParam("taskId")  String taskId,
                                    @PathParam("user")    String user,
@@ -126,8 +153,8 @@ public class Repair {
         if (sc.isUserInRole("AppAdmin") ) {
             this.username = user;
             try {
-              RepairTask task = wfClient.acquireRepairTask( taskId, user, isAllowedToBeAcquiredByUser);
-              return Response.ok(task).build();
+               wfClient.acquireTask( taskId, user, isAllowedToBeAcquiredByUser);
+               return Response.seeOther(getTaskURI(user, taskId)).build();  
             }  catch (Throwable t) {
                 return Response.status(Response.Status.NOT_ACCEPTABLE).build();
     
@@ -135,6 +162,10 @@ public class Repair {
         } else {
             return Response.status(Response.Status.FORBIDDEN).build();   
         }
+    }
+
+    private URI getTaskURI(String user, String taskId) {
+           return UriBuilder.fromResource(Repair.class).path("/{taskId}").build(user, taskId);
     }
 
     @POST

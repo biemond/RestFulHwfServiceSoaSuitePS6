@@ -570,40 +570,6 @@ public class BPELWorkflowServices {
         logger.finest("[END] acquireTask()");
     }
 
-    public Task acquireTask2(IWorkflowContext context, String taskId,
-                            boolean isAllowedToBeAcquiredByUser) throws StaleObjectException,
-                                                                        WorkflowException {
-
-        logger.finest("[START] acquireTask()");
-
-        logger.finest("\t" + "Context: " + context);
-        logger.finest("\t" + "Task id: " + taskId);
-        logger.finest("\t" + "Allowed to be acquired by user: " +
-                     isAllowedToBeAcquiredByUser);
-
-        if (isAllowedToBeAcquiredByUser) {
-
-            String user = context.getUser();
-            Task task = getTaskDetail(context, taskId);
-            String aquiredBy = task.getSystemAttributes().getAcquiredBy();
-            List assignedUsers = task.getSystemAttributes().getAssigneeUsers();
-
-            if (aquiredBy != null && aquiredBy.equals(user)) {
-                return task;
-            }
-
-            if (assignedUsers != null && assignedUsers.size() == 1 && assignedUsers.get(0).equals(user)) {
-                return task;
-            }
-        }
-
-        Task task = getTaskService().acquireTask(context, taskId);
-        getTaskQueryService().destroyWorkflowContext(context);
-        logger.finest("[END] acquireTask()");
-        return task;
-    }
-
-
 
     public void releaseTask(IWorkflowContext context,
                             String taskId) throws StaleObjectException,

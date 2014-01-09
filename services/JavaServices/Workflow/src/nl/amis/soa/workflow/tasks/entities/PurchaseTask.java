@@ -38,7 +38,7 @@ public class PurchaseTask extends Task  {
     }
 
     @Ref(resource = Purchase.class, 
-         method="purchaseAcquireTask" ,
+         method="purchaseTask" ,
          bindings={  @Binding(name="user",
                               value="${resource.username}")}, 
          style=Style.ABSOLUTE_PATH)

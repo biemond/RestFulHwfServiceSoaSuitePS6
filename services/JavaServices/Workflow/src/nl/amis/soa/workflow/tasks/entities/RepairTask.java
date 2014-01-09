@@ -8,11 +8,11 @@ import com.sun.jersey.server.linking.Ref.Style;
 
 import java.net.URI;
 
-import java.util.Calendar;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 import nl.amis.rest.common.workflow.Purchase;
+import nl.amis.rest.common.workflow.Repair;
+
 @XmlRootElement
 @Links({
     @Link(
@@ -33,8 +33,8 @@ public class RepairTask extends Task {
     public RepairTask() {
     }
 
-    @Ref(resource = Purchase.class, 
-         method="repairAcquireTask" ,
+    @Ref(resource = Repair.class, 
+         method="repairTask" ,
          bindings={  @Binding(name="user",
                               value="${resource.username}")}, 
          style=Style.ABSOLUTE_PATH)

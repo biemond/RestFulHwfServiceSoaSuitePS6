@@ -284,6 +284,79 @@ public class HumanTaskClient {
 
     }
 
+
+    public PurchaseTask getPurchaseTask(String taskId, String user) {
+        PurchaseTask purchase = null;
+        Task task = getTask( taskId,  user);
+        purchase = taskConvertor.convertPurchaseTask(task);
+        return purchase;
+    }
+
+    public RepairTask getRepairTask(String taskId, String user) {
+        RepairTask repair = null;
+        Task task = getTask( taskId,  user);
+        repair = taskConvertor.convertRepairTask(task);
+        return repair;
+    }
+
+
+    public Task getTask(String taskId, String user) {
+        long startTime = System.currentTimeMillis();
+
+        logger.finest("[START] getTask()");
+
+        logger.finest("\t" + "Task id: " + taskId);
+        logger.finest("\t" + "User: " + user);
+
+        long startTime2 = System.currentTimeMillis();
+        validateUser(user, false); 
+
+        long stopTime2 = System.currentTimeMillis();
+        long elapsedTime2 = stopTime2 - startTime2;
+        logger.finest("\t" +"getTask() validateUser in " + elapsedTime2);
+        Task taskDetail = null;
+
+        try {
+            long startTime3 = System.currentTimeMillis();
+            IWorkflowContext context = workflowServices.authenticate(user);
+            long stopTime3 = System.currentTimeMillis();
+            long elapsedTime3 = stopTime3 - startTime3;
+             logger.finest("\t" +"getTask() authenticate in " + elapsedTime3);
+
+
+            List<String> taskIds = new ArrayList<String>();
+
+            taskIds.add(taskId);
+
+            long startTime4 = System.currentTimeMillis();
+            workflowServices.validateTaskStates(context, taskIds);
+            long stopTime4 = System.currentTimeMillis();
+            long elapsedTime4 = stopTime4 - startTime4;
+            logger.finest("\t" +"getTask() validateTaskStates in " + elapsedTime4);
+
+
+            long startTime5 = System.currentTimeMillis();
+            taskDetail = workflowServices.getTaskDetail(context, taskId);
+            
+            long stopTime5 = System.currentTimeMillis();
+            long elapsedTime5 = stopTime5 - startTime5;
+            logger.finest("\t" +"getTask()  in " + elapsedTime5);
+
+
+
+        } catch (Throwable t) {
+
+            logger.severe(t.getMessage(), t);
+            throw new RuntimeException("error getTask");
+        }
+
+        logger.finest("[END] getTask()");
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        logger.finest("[END] getTask() in " + elapsedTime);
+        return taskDetail;
+    }
+
     public void acquireTask(String taskId, String user,
                             boolean isAllowedToBeAcquiredByUser) {
         long startTime = System.currentTimeMillis();
@@ -342,123 +415,6 @@ public class HumanTaskClient {
         logger.finest("[END] acquireTask() in " + elapsedTime);
     }
 
-    public PurchaseTask acquirePurchaseTask(String taskId, 
-                                          String user,
-                                          boolean isAllowedToBeAcquiredByUser) {
-        long startTime = System.currentTimeMillis();
-
-        logger.finest("[START] acquireTask()");
-
-        logger.finest("\t" + "Task id: " + taskId);
-        logger.finest("\t" + "User: " + user);
-        logger.finest("\t" + "is allowed to be acquired by user: " +
-                    isAllowedToBeAcquiredByUser);
-
-        long startTime2 = System.currentTimeMillis();
-        validateUser(user, false); 
-
-        long stopTime2 = System.currentTimeMillis();
-        long elapsedTime2 = stopTime2 - startTime2;
-        logger.finest("\t" +"acquireTask() validateUser in " + elapsedTime2);
-        PurchaseTask purchase = null;
-        try {
-            long startTime3 = System.currentTimeMillis();
-            IWorkflowContext context = workflowServices.authenticate(user);
-            long stopTime3 = System.currentTimeMillis();
-            long elapsedTime3 = stopTime3 - startTime3;
-             logger.finest("\t" +"acquireTask() authenticate in " + elapsedTime3);
-
-
-            List<String> taskIds = new ArrayList<String>();
-
-            taskIds.add(taskId);
-
-            long startTime4 = System.currentTimeMillis();
-            workflowServices.validateTaskStates(context, taskIds);
-            long stopTime4 = System.currentTimeMillis();
-            long elapsedTime4 = stopTime4 - startTime4;
-            logger.finest("\t" +"acquireTask() validateTaskStates in " + elapsedTime4);
-
-
-            long startTime5 = System.currentTimeMillis();
-
-            Task task = workflowServices.acquireTask2(context, taskId,
-                                         isAllowedToBeAcquiredByUser);
-            purchase = taskConvertor.convertPurchaseTask(task);  
-            long stopTime5 = System.currentTimeMillis();
-            long elapsedTime5 = stopTime5 - startTime5;
-            logger.finest("\t" +"acquireTask() acquireTask in " + elapsedTime5);
-        } catch (Throwable t) {
-
-            logger.severe(t.getMessage(), t);
-            throw new RuntimeException("this task is already acquired");
-        }
-
-        logger.finest("[END] acquireTask()");
-        long stopTime = System.currentTimeMillis();
-        long elapsedTime = stopTime - startTime;
-        logger.finest("[END] acquireTask() in " + elapsedTime);
-        return purchase; 
-    }
-
-    public RepairTask acquireRepairTask(String taskId, 
-                                          String user,
-                                          boolean isAllowedToBeAcquiredByUser) {
-        long startTime = System.currentTimeMillis();
-
-        logger.finest("[START] acquireTask()");
-
-        logger.finest("\t" + "Task id: " + taskId);
-        logger.finest("\t" + "User: " + user);
-        logger.finest("\t" + "is allowed to be acquired by user: " +
-                    isAllowedToBeAcquiredByUser);
-
-        long startTime2 = System.currentTimeMillis();
-        validateUser(user, false); 
-
-        long stopTime2 = System.currentTimeMillis();
-        long elapsedTime2 = stopTime2 - startTime2;
-        logger.finest("\t" +"acquireTask() validateUser in " + elapsedTime2);
-        RepairTask repair = null;
-        try {
-            long startTime3 = System.currentTimeMillis();
-            IWorkflowContext context = workflowServices.authenticate(user);
-            long stopTime3 = System.currentTimeMillis();
-            long elapsedTime3 = stopTime3 - startTime3;
-             logger.finest("\t" +"acquireTask() authenticate in " + elapsedTime3);
-
-
-            List<String> taskIds = new ArrayList<String>();
-
-            taskIds.add(taskId);
-
-            long startTime4 = System.currentTimeMillis();
-            workflowServices.validateTaskStates(context, taskIds);
-            long stopTime4 = System.currentTimeMillis();
-            long elapsedTime4 = stopTime4 - startTime4;
-            logger.finest("\t" +"acquireTask() validateTaskStates in " + elapsedTime4);
-
-
-            long startTime5 = System.currentTimeMillis();
-
-            Task task = workflowServices.acquireTask2(context, taskId,
-                                         isAllowedToBeAcquiredByUser);
-            repair = taskConvertor.convertRepairTask(task);  
-            long stopTime5 = System.currentTimeMillis();
-            long elapsedTime5 = stopTime5 - startTime5;
-            logger.finest("\t" +"acquireTask() acquireTask in " + elapsedTime5);
-        } catch (Throwable t) {
-
-            logger.severe(t.getMessage(), t);
-            throw new RuntimeException("this task is already acquired");
-        }
-
-        logger.finest("[END] acquireTask()");
-        long stopTime = System.currentTimeMillis();
-        long elapsedTime = stopTime - startTime;
-        logger.finest("[END] acquireTask() in " + elapsedTime);
-        return repair; 
-    }
 
 
     public void releaseTask(String taskId, String user) {
