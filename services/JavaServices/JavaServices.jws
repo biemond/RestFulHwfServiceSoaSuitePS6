@@ -19,6 +19,7 @@
    <list n="listOfChildren">
       <hash><url n="URL" path="Common/Common.jpr"/></hash>
       <hash><url n="URL" path="dev/dev.jpr"/></hash>
+      <hash><url n="URL" path="Product/Product.jpr"/></hash>
       <hash><url n="URL" path="Workflow/Workflow.jpr"/></hash>
    </list>
    <hash n="oracle.jdeveloper.deploy.dt.DeploymentProfiles">

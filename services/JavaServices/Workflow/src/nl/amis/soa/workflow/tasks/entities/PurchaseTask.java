@@ -19,7 +19,7 @@ import nl.amis.rest.common.workflow.Purchase;
 @XmlRootElement
 @Links({
     @Link(
-      value= @Ref(value="/product-context-root/jersey/products/{product}" ,
+      value= @Ref(value="/Product-context-root/jersey/products/{product}" ,
                   style=Style.RELATIVE_PATH),
       rel="product"
     ),
@@ -54,7 +54,7 @@ public class PurchaseTask extends Task  {
     private String   city;
     private int      amount;
 
-    @Ref(value="/product-context-root/jersey/products/{product}",
+    @Ref(value="/Product-context-root/jersey/products/{product}",
          style=Style.RELATIVE_PATH)
     private URI productURI;
 
