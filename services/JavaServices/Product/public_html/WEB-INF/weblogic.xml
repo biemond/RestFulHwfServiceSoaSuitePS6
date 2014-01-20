@@ -2,6 +2,9 @@
 <weblogic-web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://www.bea.com/ns/weblogic/weblogic-web-app http://www.bea.com/ns/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd"
                   xmlns="http://www.bea.com/ns/weblogic/weblogic-web-app">
+  <container-descriptor>
+    <prefer-web-inf-classes>true</prefer-web-inf-classes>
+  </container-descriptor>
   <library-ref>
     <library-name>jersey-bundle</library-name>
     <specification-version>1.18</specification-version>

@@ -22,7 +22,7 @@ import nl.amis.rest.product.entities.Response;
  *
  * @author Jeanfrancois Arcand
  */
-@Path("/")
+@Path("/chat")
 public class ProductChat {
     /**
      * Suspend the response without writing anything back to the client.

@@ -1,15 +1,39 @@
 package nl.amis.rest.product.services;
 
 
+import com.sun.jersey.core.header.FormDataContentDisposition;
+import com.sun.jersey.multipart.FormDataParam;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import java.util.UUID;
+
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import nl.amis.rest.product.entities.FileDetail;
+
+import nl.amis.rest.product.entities.ImportProgress;
+import nl.amis.rest.product.entities.Status;
+import nl.amis.rest.product.entities.UploadRequest;
+
+import org.apache.commons.io.FileUtils;
+
+import org.atmosphere.cpr.Broadcaster;
+import org.atmosphere.cpr.BroadcasterFactory;
 
 @Path("/products")
 public class Product {
@@ -69,5 +93,94 @@ public class Product {
 
     }
 
+    @POST
+    @Path("/upload")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response uploadFile(
+        @FormDataParam("fileUpload") InputStream uploadedInputStream,
+        @FormDataParam("fileUpload") FormDataContentDisposition fileDetail) {
+
+        if ( fileDetail == null ) {
+            Response.status(Response.Status.BAD_REQUEST).build() ; 
+        }
+            
+        String batchId = UUID.randomUUID().toString();
+        System.out.println("batchId: "+batchId);
+        File tmpdir  = new File(System.getProperty("java.io.tmpdir"));
+        System.out.println("tmpdir: "+tmpdir.getAbsolutePath());
+        System.out.println("fileDetail: "+fileDetail.getFileName());
+        File tmpfile = new File(tmpdir, batchId + "_" +fileDetail.getFileName());
+        try {
+            FileUtils.copyInputStreamToFile(uploadedInputStream, tmpfile);
+        } catch (IOException e) {
+           return Response.serverError().build() ;
+        }
+        FileDetail fileResponse = new FileDetail();
+        fileResponse.setFileName(fileDetail.getFileName());
+        fileResponse.setBatchId(batchId);
+        fileResponse.setFullPath(tmpfile.getAbsolutePath());
+
+        return Response.ok(fileResponse).build();
+    }
+
+    @POST
+    @Path("/import")
+    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
+    public Response importFiles( UploadRequest request) {
+        if ( request == null )
+           return Response.status(Response.Status.BAD_REQUEST).build() ; 
+        // send import started
+        Status status = new Status();
+        status.setImportStatus("Error");
+
+        Broadcaster b = BroadcasterFactory.getDefault().lookup("product", true);
+            
+        if ( "product".equalsIgnoreCase(request.getType()) ) {
+          status = this.importProduct( request, status,b);
+        } else {
+            status.setMessage("unknown import action");    
+            return Response.status(Response.Status.BAD_REQUEST).build() ; 
+        }
+        return Response.ok(status).build();
+    }
+
+    private Status importProduct(UploadRequest request, Status status, Broadcaster b) {
+        if ( request.getFiles() != null ) {
+
+            //InputStream productStream = null;
+            List<ImportProgress> progress = new ArrayList();
+//            try {              
+                for ( int i = 1 ; i <= request.getFiles().size() ; i ++ ) {
+                  FileDetail detail = request.getFiles().get(i);  
+                  ImportProgress importProduct  = new ImportProgress();
+                  importProduct.setBatchId(detail.getBatchId());
+                  importProduct.setFileName(detail.getFileName());
+                  importProduct.setProgress(i/request.getFiles().size() * 100);
+                  
+                  //productStream = FileUtils.openInputStream(new File(detail.getFullPath()));
+                  
+                  b.broadcast(importProduct);
+                  sleep();
+                }
+//            } catch (IOException e) {
+//                 status.setMelding(e.getLocalizedMessage());    
+//                 return status;
+//            }
+            status.setImportStatus("Ok");
+            status.setImportProgresses(progress);
+            return status;
+        } else {
+            // empty details
+            status.setMessage("no files supplied");    
+            return status;  
+        }
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+    }
 
 }

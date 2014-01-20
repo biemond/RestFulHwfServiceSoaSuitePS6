@@ -8,7 +8,7 @@ $(function () {
     var author = null;
     var logged = false;
     var socket = $.atmosphere;
-    var request = { url: getContextURLPath() + '/chat',
+    var request = { url: getContextURLPath() + '/atmosphere/chat',
                     contentType : "application/json",
                     logLevel : 'debug',
                     transport : 'sse' ,
